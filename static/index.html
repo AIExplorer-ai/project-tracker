@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Light theme ── */
+:root{
+  --bg:#f8f9fb;--surface:#fff;--surface2:#f2f4f7;--surface3:#e9ecf0;
+  --border:#e4e7ec;--border2:#d0d5dd;
+  --text:#101828;--text2:#475467;--text3:#98a2b3;
+  --accent:#2563eb;--accent-l:#eff6ff;--accent-b:#bfdbfe;
+  --green:#16a34a;--green-bg:#f0fdf4;--green-b:#bbf7d0;
+  --amber:#d97706;--amber-bg:#fffbeb;--amber-b:#fde68a;
+  --red:#dc2626;--red-bg:#fef2f2;--red-b:#fecaca;
+  --purple:#7c3aed;--purple-bg:#f5f3ff;
+  --topbar-bg:rgba(248,249,251,0.92);
+  --kanban-bg:#f1f3f6;
+  --font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+  --r:8px;--r-lg:12px;--r-xl:16px;
+  --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --sh-md:0 4px 16px rgba(0,0,0,.10);--sh-lg:0 8px 32px rgba(0,0,0,.13);
+}
+/* ── Dark theme ── */
+[data-theme="dark"]{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--surface3:#2a2f45;
+  --border:#2e3248;--border2:#3a3f5c;
+  --text:#f0f2f8;--text2:#9ba3bf;--text3:#555e7a;
+  --accent:#4f8ef7;--accent-l:#1a2340;--accent-b:#2a3a6a;
+  --green:#22c55e;--green-bg:#0d2a1a;--green-b:#15532e;
+  --amber:#fbbf24;--amber-bg:#2a1f05;--amber-b:#78450a;
+  --red:#f87171;--red-bg:#2a0d0d;--red-b:#7f1d1d;
+  --purple:#a78bfa;--purple-bg:#1e1433;
+  --topbar-bg:rgba(15,17,23,0.92);
+  --kanban-bg:#0d0f18;
+  --sh:0 1px 3px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);
+  --sh-md:0 4px 16px rgba(0,0,0,.5);--sh-lg:0 8px 32px rgba(0,0,0,.6);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{transition:background .25s,color .25s}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;transition:background .25s,color .25s}
+.layout{display:flex;min-height:100vh}
+/* ── Sidebar ── */
+.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:10;transition:background .25s,border-color .25s}
+.sidebar-logo{padding:18px 16px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.logo-icon{width:32px;height:32px;background:var(--accent);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-icon svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2}
+.logo-text{font-size:14px;font-weight:600;color:var(--text)}.logo-sub{font-size:11px;color:var(--text3)}
+.sidebar-nav{padding:10px 8px;flex:1}
+.nav-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;padding:0 8px;margin:10px 0 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r);cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:background .15s,color .15s;user-select:none;border:none;background:none;width:100%;text-align:left}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-l);color:var(--accent)}
+.nav-item .badge{margin-left:auto;background:var(--surface2);color:var(--text3);font-size:10px;font-weight:600;padding:1px 7px;border-radius:20px}
+.nav-item.active .badge{background:var(--accent-b);color:var(--accent)}
+.sidebar-footer{padding:12px 8px;border-top:1px solid var(--border)}
+/* ── Dark mode toggle ── */
+.dark-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:var(--r);margin-bottom:4px}
+.dark-toggle-label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--text2)}
+.dark-toggle-label svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+.toggle-switch{position:relative;width:34px;height:19px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;border-radius:20px;background:var(--border2);cursor:pointer;transition:background .2s}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:13px;height:13px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.toggle-switch input:checked~.toggle-track{background:var(--accent)}
+.toggle-switch input:checked~.toggle-track .toggle-thumb{transform:translateX(15px)}
+/* ── Main ── */
+.main{margin-left:220px;display:flex;flex-direction:column;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:9;background:var(--topbar-bg);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:12px;transition:background .25s,border-color .25s}
+.topbar-title{font-size:15px;font-weight:600;color:var(--text)}
+.topbar-sep{width:1px;height:20px;background:var(--border)}
+.search-wrap{flex:1;max-width:320px;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:0 10px;height:34px;transition:background .25s,border-color .25s}
+.search-wrap svg{width:14px;height:14px;stroke:var(--text3);fill:none;stroke-width:2;flex-shrink:0}
+.search-wrap input{border:none;background:none;outline:none;font-family:var(--font);font-size:13px;color:var(--text);width:100%}
+.search-wrap input::placeholder{color:var(--text3)}
+.topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+/* ── View toggle (Table / Kanban) ── */
+.view-toggle{display:flex;background:var(--surface2);border-radius:var(--r);padding:2px;gap:2px;border:1px solid var(--border)}
+.view-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;font-size:12px;font-weight:500;font-family:var(--font);cursor:pointer;border:none;background:none;color:var(--text3);transition:all .15s;white-space:nowrap}
+.view-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
+.view-btn.active{background:var(--surface);color:var(--text);box-shadow:var(--sh)}
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--text);transition:background .12s,box-shadow .12s;white-space:nowrap}
+.btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+.btn:hover{background:var(--surface2);box-shadow:var(--sh)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:#1d4ed8;box-shadow:0 2px 8px rgba(37,99,235,.25)}
+.btn-ai{background:var(--purple-bg);color:var(--purple);border-color:#ddd6fe}
+.btn-ai:hover{background:var(--accent-l)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{color:var(--red);border-color:var(--red-b);background:var(--red-bg)}
+/* ── Content ── */
+.content{padding:20px 24px;flex:1}
+/* ── Stats ── */
+.stats-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;display:flex;flex-direction:column;gap:4px;transition:background .25s,border-color .25s}
+.stat-label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.stat-val{font-size:22px;font-weight:600;color:var(--text);line-height:1.2}
+.stat-sub{font-size:11px;color:var(--text3)}
+/* ── Table view ── */
+.table-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh);transition:background .25s,border-color .25s}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:900px}
+thead th{background:var(--surface2);font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;user-select:none;transition:background .25s}
+thead th:first-child{width:40px;text-align:center}
+thead th:last-child{width:100px}
+.th-inner{display:flex;align-items:center;gap:5px;cursor:pointer}
+.th-sort{display:flex;flex-direction:column;gap:1px;opacity:.35}
+.th-sort svg{width:8px;height:8px;fill:currentColor;stroke:none}
+.th-sort.asc svg:first-child,.th-sort.desc svg:last-child{opacity:1;color:var(--accent)}
+.col-del-btn{width:16px;height:16px;border-radius:4px;background:none;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;color:var(--text3);padding:0;flex-shrink:0;margin-left:auto}
+.col-del-btn svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.5}
+thead th:hover .col-del-btn{display:flex}
+.col-del-btn:hover{background:var(--red-bg);color:var(--red)}
+/* ── Column resize handle ── */
+thead th{position:relative}
+.col-resize{position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:3;background:transparent;user-select:none}
+.col-resize:hover,.col-resize.resizing{background:var(--accent);opacity:.5}
+.col-resize-line{position:fixed;top:0;bottom:0;width:2px;background:var(--accent);opacity:.6;pointer-events:none;z-index:9999;display:none}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+tbody td{padding:6px 12px;vertical-align:middle;font-size:13px;color:var(--text)}
+tbody td:first-child{text-align:center;color:var(--text3);font-size:12px;font-family:var(--mono)}
+.cell-input{width:100%;border:none;background:transparent;outline:none;font-family:var(--font);font-size:13px;color:var(--text);padding:3px 5px;border-radius:5px;transition:background .12s;min-width:80px}
+.cell-input:hover{background:var(--surface2)}
+.cell-input:focus{background:var(--accent-l);outline:2px solid var(--accent-b)}
+.cell-input[type=date]{font-family:var(--font);color:var(--text2);color-scheme:var(--cs,light)}
+[data-theme="dark"] .cell-input[type=date]{color-scheme:dark}
+/* ── Status pills ── */
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;border:1px solid transparent;cursor:pointer;font-family:var(--font)}
+.status-pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.sp-not-started{background:var(--surface2);color:var(--text3);border-color:var(--border)}
+.sp-in-progress{background:var(--accent-l);color:var(--accent);border-color:var(--accent-b)}
+.sp-review{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-b)}
+.sp-completed{background:var(--green-bg);color:var(--green);border-color:var(--green-b)}
+.sp-blocked{background:var(--red-bg);color:var(--red);border-color:var(--red-b)}
+/* ── Progress ── */
+.pct-cell{display:flex;align-items:center;gap:8px;min-width:120px}
+.pct-bar-wrap{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;min-width:50px}
+.pct-bar-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .3s}
+.pct-bar-fill.high{background:var(--green)}.pct-bar-fill.med{background:var(--amber)}
+.pct-input{width:40px;border:1px solid var(--border);border-radius:5px;padding:2px 4px;font-size:12px;font-family:var(--mono);text-align:right;color:var(--text);background:transparent;outline:none}
+.pct-input:focus{border-color:var(--accent);background:var(--accent-l)}
+/* ── Row actions ── */
+.row-actions{display:flex;align-items:center;justify-content:center;gap:4px;opacity:0;transition:opacity .12s}
+tbody tr:hover .row-actions{opacity:1}
+.row-action-btn{width:26px;height:26px;border-radius:6px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3)}
+.row-action-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
+.row-action-btn:hover{background:var(--surface2);color:var(--text)}
+.row-action-btn.danger:hover{background:var(--red-bg);color:var(--red)}
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:60px 20px}
+.empty-icon{width:48px;height:48px;border-radius:var(--r-lg);background:var(--surface2);display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px}
+.empty-icon svg{width:24px;height:24px;stroke:var(--text3);fill:none;stroke-width:1.5}
+.empty-title{font-size:15px;font-weight:600;margin-bottom:6px;color:var(--text)}
+.empty-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+
+/* ── KANBAN BOARD ── */
+.kanban-wrap{display:none}
+.kanban-board{display:flex;gap:14px;overflow-x:auto;padding-bottom:20px;align-items:flex-start}
+.kanban-col{width:272px;flex-shrink:0;display:flex;flex-direction:column;gap:0}
+.kanban-col-header{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--r-lg) var(--r-lg) 0 0;background:var(--surface);border:1px solid var(--border);border-bottom:none}
+.kanban-col-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;flex:1}
+.kanban-col-count{font-size:11px;font-weight:600;background:var(--surface2);color:var(--text3);padding:1px 7px;border-radius:20px}
+.kanban-col-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.kanban-cards{background:var(--kanban-bg);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r-lg) var(--r-lg);padding:8px;min-height:80px;display:flex;flex-direction:column;gap:8px;transition:background .15s}
+.kanban-cards.drag-over{background:var(--accent-l);border-color:var(--accent-b)}
+/* ── Kanban card ── */
+.kanban-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px;cursor:grab;transition:box-shadow .15s,transform .15s,border-color .15s;position:relative}
+.kanban-card:active{cursor:grabbing}
+.kanban-card:hover{box-shadow:var(--sh-md);border-color:var(--border2)}
+.kanban-card.dragging{opacity:.45;transform:scale(.97)}
+.kanban-card.drag-placeholder{background:var(--accent-l);border:2px dashed var(--accent-b);opacity:.6}
+.kc-project{font-size:13px;font-weight:600;color:var(--text);margin-bottom:5px;line-height:1.3}
+.kc-purpose{font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.4}
+.kc-footer{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.kc-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:500;background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+.kc-pct{display:flex;align-items:center;gap:5px;margin-top:8px}
+.kc-pct-bar{flex:1;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.kc-pct-fill{height:100%;border-radius:2px;background:var(--accent);transition:width .3s}
+.kc-pct-fill.high{background:var(--green)}.kc-pct-fill.med{background:var(--amber)}
+.kc-pct-label{font-size:10px;color:var(--text3);font-family:var(--mono);min-width:26px}
+.kc-actions{display:flex;gap:4px;margin-left:auto}
+.kc-btn{width:22px;height:22px;border-radius:5px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);opacity:0;transition:opacity .12s,background .12s}
+.kc-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2}
+.kanban-card:hover .kc-btn{opacity:1}
+.kc-btn:hover{background:var(--surface2);color:var(--text)}
+.kc-btn.danger:hover{background:var(--red-bg);color:var(--red)}
+.kc-notes-link{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:500;text-decoration:none;color:var(--accent);opacity:0;transition:opacity .12s}
+.kanban-card:hover .kc-notes-link{opacity:1}
+.kc-notes-link svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2}
+.kanban-add-btn{display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:var(--r);border:1.5px dashed var(--border2);background:none;color:var(--text3);font-size:12px;font-family:var(--font);cursor:pointer;transition:all .15s;width:100%;margin-top:4px}
+.kanban-add-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.kanban-add-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ── Modals ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--r-xl);box-shadow:var(--sh-lg);width:480px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--border)}
+.modal-lg{width:680px}
+.modal-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;color:var(--text)}
+.modal-close{width:28px;height:28px;border-radius:6px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3)}
+.modal-close svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.modal-close:hover{background:var(--surface2);color:var(--text)}
+.modal-body{padding:18px 20px;overflow-y:auto;flex:1}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+.col-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);margin-bottom:4px;background:var(--surface2)}
+.col-item-label{flex:1;font-size:13px;font-weight:500;color:var(--text)}
+.col-type-tag{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;background:var(--accent-l);color:var(--accent);text-transform:uppercase;letter-spacing:.04em}
+.section-divider{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin:14px 0 8px}
+.form-row{margin-bottom:12px}
+.form-label{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px;display:block}
+.form-input{width:100%;padding:8px 12px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;font-family:var(--font);color:var(--text);background:var(--surface);outline:none;transition:border-color .12s}
+.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2398a2b3' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;cursor:pointer}
+/* ── Status dropdown ── */
+.status-dropdown{position:absolute;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-md);padding:6px;min-width:160px;display:none}
+.status-dropdown.open{display:block}
+.status-option{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--r);cursor:pointer;font-size:12px;font-weight:500;color:var(--text)}
+.status-option:hover{background:var(--surface2)}
+.status-option .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* ── AI modal ── */
+.summary-panel{width:760px;max-height:90vh}
+.ai-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:var(--purple-bg);color:var(--purple);border:1px solid #ddd6fe}
+.summary-content{font-size:14px;line-height:1.75;color:var(--text2)}
+.summary-content h2{font-size:15px;font-weight:600;color:var(--text);margin:20px 0 8px;padding-top:4px;border-top:1px solid var(--border)}
+.summary-content h2:first-child{border-top:none;margin-top:0}
+.summary-content ul{padding-left:20px;margin:6px 0}
+.summary-content li{margin-bottom:4px}
+.summary-content p{margin-bottom:10px}
+.period-btns{display:flex;gap:8px;margin-bottom:16px}
+.period-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);transition:all .12s}
+.period-btn.active{background:var(--purple-bg);color:var(--purple);border-color:#ddd6fe}
+.api-key-row{display:flex;align-items:center;gap:8px}
+.api-key-row .form-input{flex:1}
+.history-item{padding:10px 12px;border-radius:var(--r);background:var(--surface2);margin-bottom:6px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text)}
+.history-item:hover{background:var(--border)}
+.loading-dots{display:inline-flex;gap:4px;align-items:center}
+.loading-dots span{width:7px;height:7px;border-radius:50%;background:var(--purple);animation:dot 1.2s infinite ease-in-out}
+.loading-dots span:nth-child(2){animation-delay:.2s}
+.loading-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+/* ── Toast ── */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--text);color:var(--bg);padding:11px 16px;border-radius:var(--r-lg);font-size:13px;font-weight:500;box-shadow:var(--sh-md);display:flex;align-items:center;gap:9px;animation:slideUp .25s ease}
+.toast svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+.toast.error{background:var(--red);color:#fff}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.saving-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+    <div><div class="logo-text">Tracker</div><div class="logo-sub"><span class="saving-dot"></span>Auto-saving</div></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Views</div>
+    <button class="nav-item active" onclick="setView('all',this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      <span>All projects</span><span class="badge" id="b-all">0</span>
+    </button>
+    <button class="nav-item" onclick="setView('in-progress',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <span>In progress</span><span class="badge" id="b-prog">0</span>
+    </button>
+    <button class="nav-item" onclick="setView('review',this)">
+      <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      <span>In review</span><span class="badge" id="b-rev">0</span>
+    </button>
+    <button class="nav-item" onclick="setView('completed',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
+      <span>Completed</span><span class="badge" id="b-done">0</span>
+    </button>
+    <button class="nav-item" onclick="setView('blocked',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M4.93 4.93l14.14 14.14"/></svg>
+      <span>Blocked</span><span class="badge" id="b-block">0</span>
+    </button>
+    <div class="nav-label" style="margin-top:16px">AI</div>
+    <button class="nav-item" onclick="openSummaryModal()">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span>AI Summary</span>
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="dark-toggle">
+      <div class="dark-toggle-label">
+        <svg viewBox="0 0 24 24" id="theme-icon"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        <span id="theme-label">Dark mode</span>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="dark-toggle-input" onchange="toggleDark(this.checked)">
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      </label>
+    </div>
+    <button class="nav-item" onclick="exportCSV()">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>Export CSV</span>
+    </button>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="view-title">All projects</div>
+    <div class="topbar-sep"></div>
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search projects…" id="search-input" oninput="renderCurrent()">
+    </div>
+    <div class="topbar-actions">
+      <!-- View toggle -->
+      <div class="view-toggle">
+        <button class="view-btn active" id="vbtn-table" onclick="switchView('table')">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>Table
+        </button>
+        <button class="view-btn" id="vbtn-kanban" onclick="switchView('kanban')">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="11" rx="1"/><rect x="17" y="3" width="5" height="14" rx="1"/></svg>Kanban
+        </button>
+      </div>
+      <div class="topbar-sep"></div>
+      <button class="btn" onclick="openColModal()">
+        <svg viewBox="0 0 24 24"><path d="M12 3h7a2 2 0 012 2v14a2 2 0 01-2 2h-7M12 3H5a2 2 0 00-2 2v14a2 2 0 002 2h7M12 3v18"/></svg>Columns
+      </button>
+      <button class="btn btn-primary" onclick="addRow()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add project
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="stats-bar" id="stats-bar"></div>
+
+    <!-- TABLE VIEW -->
+    <div id="table-view">
+      <div class="table-toolbar">
+        <div style="flex:1"></div>
+        <div id="row-count" style="font-size:12px;color:var(--text3)"></div>
+      </div>
+      <div class="table-wrap"><div class="table-scroll">
+        <table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- KANBAN VIEW -->
+    <div id="kanban-view" style="display:none">
+      <div class="kanban-board" id="kanban-board"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Column modal -->
+<div class="modal-overlay" id="col-modal">
+<div class="modal">
+  <div class="modal-header">
+    <div class="modal-title">Manage columns</div>
+    <button class="modal-close" onclick="closeColModal()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="modal-body">
+    <div class="section-divider">Toggle visibility</div>
+    <div id="col-list"></div>
+    <div class="section-divider" style="margin-top:20px">Add new column</div>
+    <div class="form-row"><label class="form-label">Column name</label>
+      <input class="form-input" id="new-col-name" placeholder="e.g. Budget, Owner, Priority…" onkeydown="if(event.key==='Enter')addColumn()"></div>
+    <div class="form-row"><label class="form-label">Type</label>
+      <select class="form-input form-select" id="new-col-type">
+        <option value="text">Text</option><option value="date">Date</option>
+        <option value="status">Status</option><option value="percent">Percentage</option>
+        <option value="number">Number</option><option value="url">URL / Link</option>
+      </select></div>
+    <button class="btn btn-primary" style="width:100%" onclick="addColumn()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add column
+    </button>
+  </div>
+  <div class="modal-footer"><button class="btn" onclick="closeColModal()">Done</button></div>
+</div></div>
+
+<!-- AI Summary modal -->
+<div class="modal-overlay" id="summary-modal">
+<div class="modal modal-lg summary-panel">
+  <div class="modal-header">
+    <div class="modal-title">
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--purple);fill:none;stroke-width:2"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      AI Project Summary <span class="ai-badge">Claude</span>
+    </div>
+    <button class="modal-close" onclick="closeSummaryModal()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="modal-body">
+    <div id="summary-config">
+      <div class="form-row">
+        <label class="form-label">Anthropic API key</label>
+        <div class="api-key-row">
+          <input class="form-input" type="password" id="api-key-input" placeholder="sk-ant-…" autocomplete="off">
+          <button class="btn btn-sm" onclick="toggleKeyVis(this)" style="flex-shrink:0">Show</button>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px">Used only for this request, never stored on disk.</div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Period</label>
+        <div class="period-btns">
+          <button class="period-btn active" data-period="month" onclick="selectPeriod(this)">This month</button>
+          <button class="period-btn" data-period="quarter" onclick="selectPeriod(this)">This quarter</button>
+          <button class="period-btn" data-period="all" onclick="selectPeriod(this)">All time</button>
+        </div>
+      </div>
+      <button class="btn btn-ai" style="width:100%;justify-content:center;padding:10px" onclick="generateSummary()">
+        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Generate summary
+      </button>
+    </div>
+    <div id="summary-loading" style="display:none;text-align:center;padding:40px 0">
+      <div class="loading-dots"><span></span><span></span><span></span></div>
+      <div style="margin-top:14px;font-size:13px;color:var(--text3)">Claude is analysing your projects…</div>
+    </div>
+    <div id="summary-result" style="display:none;margin-top:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="font-size:12px;color:var(--text3)" id="summary-meta"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm" onclick="copySummary()"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</button>
+          <button class="btn btn-sm btn-ai" onclick="generateSummary()"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>Regenerate</button>
+        </div>
+      </div>
+      <div class="summary-content" id="summary-text"></div>
+    </div>
+    <div style="margin-top:24px">
+      <div class="section-divider">Past summaries</div>
+      <div id="history-list"><div style="font-size:13px;color:var(--text3)">No summaries yet.</div></div>
+    </div>
+  </div>
+</div></div>
+
+<!-- Resize guide line -->
+<div class="col-resize-line" id="resize-line"></div>
+
+<!-- Status dropdown -->
+<div class="status-dropdown" id="status-dd">
+  <div class="status-option" onclick="setStatus('not-started')"><span class="dot" style="background:#9ca3af"></span>Not started</div>
+  <div class="status-option" onclick="setStatus('in-progress')"><span class="dot" style="background:#2563eb"></span>In progress</div>
+  <div class="status-option" onclick="setStatus('review')"><span class="dot" style="background:#d97706"></span>In review</div>
+  <div class="status-option" onclick="setStatus('completed')"><span class="dot" style="background:#16a34a"></span>Completed</div>
+  <div class="status-option" onclick="setStatus('blocked')"><span class="dot" style="background:#dc2626"></span>Blocked</div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────
+let columns=[], rows=[], activeView='all', sortCol=null, sortDir='asc';
+let statusTarget=null, selectedPeriod='month', lastSummaryText='';
+let currentLayoutView = 'table'; // 'table' | 'kanban'
+let dragCard=null, dragRowId=null;
+
+const STATUS_META={
+  'not-started':{label:'Not started',cls:'sp-not-started',dot:'#9ca3af',col:'not-started'},
+  'in-progress': {label:'In progress', cls:'sp-in-progress', dot:'#2563eb',col:'in-progress'},
+  'review':      {label:'In review',   cls:'sp-review',      dot:'#d97706',col:'review'},
+  'completed':   {label:'Completed',   cls:'sp-completed',   dot:'#16a34a',col:'completed'},
+  'blocked':     {label:'Blocked',     cls:'sp-blocked',     dot:'#dc2626',col:'blocked'},
+};
+
+const KANBAN_COLS=[
+  {id:'not-started', label:'Not started', dot:'#9ca3af'},
+  {id:'in-progress',  label:'In progress',  dot:'#2563eb'},
+  {id:'review',       label:'In review',    dot:'#d97706'},
+  {id:'completed',    label:'Completed',    dot:'#16a34a'},
+  {id:'blocked',      label:'Blocked',      dot:'#dc2626'},
+];
+
+// ── Dark mode ──────────────────────────────────────────────────────────
+function toggleDark(on){
+  document.documentElement.setAttribute('data-theme', on ? 'dark' : 'light');
+  document.getElementById('theme-label').textContent = on ? 'Light mode' : 'Dark mode';
+  const icon = document.getElementById('theme-icon');
+  icon.innerHTML = on
+    ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+    : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+  localStorage.setItem('pt_theme', on ? 'dark' : 'light');
+}
+function initTheme(){
+  const saved = localStorage.getItem('pt_theme');
+  if(saved === 'dark'){
+    document.documentElement.setAttribute('data-theme','dark');
+    document.getElementById('dark-toggle-input').checked = true;
+    toggleDark(true);
+  }
+}
+
+// ── View switch (table / kanban) ───────────────────────────────────────
+function switchView(v){
+  currentLayoutView = v;
+  document.getElementById('table-view').style.display = v==='table' ? 'block' : 'none';
+  document.getElementById('kanban-view').style.display = v==='kanban' ? 'block' : 'none';
+  document.getElementById('vbtn-table').classList.toggle('active', v==='table');
+  document.getElementById('vbtn-kanban').classList.toggle('active', v==='kanban');
+  if(v==='kanban') renderKanban(); else renderTable();
+  localStorage.setItem('pt_layout', v);
+}
+
+// ── API ────────────────────────────────────────────────────────────────
+async function api(path,method='GET',body=null){
+  const opts={method,headers:{'Content-Type':'application/json'}};
+  if(body) opts.body=JSON.stringify(body);
+  return (await fetch(path,opts)).json();
+}
+
+// ── Boot ───────────────────────────────────────────────────────────────
+async function boot(){
+  initTheme();
+  [columns,rows]=await Promise.all([api('/api/columns'),api('/api/projects')]);
+  const savedLayout = localStorage.getItem('pt_layout') || 'table';
+  render();
+  loadHistory();
+  if(savedLayout==='kanban') switchView('kanban');
+}
+
+// ── Render dispatcher ──────────────────────────────────────────────────
+function render(){ renderStats(); renderBadges(); renderCurrent(); }
+function renderCurrent(){ currentLayoutView==='kanban' ? renderKanban() : renderTable(); }
+
+function filtered(){
+  let r=rows.slice();
+  if(activeView!=='all') r=r.filter(x=>x.status===activeView);
+  const q=document.getElementById('search-input').value.toLowerCase();
+  if(q) r=r.filter(row=>columns.some(c=>String(row[c.id]||'').toLowerCase().includes(q)));
+  if(sortCol){
+    r.sort((a,b)=>{
+      let va=a[sortCol]||'',vb=b[sortCol]||'';
+      if(sortCol==='pct'){va=+va;vb=+vb;}
+      return (va<vb?-1:va>vb?1:0)*(sortDir==='asc'?1:-1);
+    });
+  }
+  return r;
+}
+
+function renderStats(){
+  const t=rows.length,done=rows.filter(r=>r.status==='completed').length;
+  const inp=rows.filter(r=>r.status==='in-progress').length;
+  const avg=t?Math.round(rows.reduce((s,r)=>s+(+r.pct||0),0)/t):0;
+  const blk=rows.filter(r=>r.status==='blocked').length;
+  document.getElementById('stats-bar').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val">${t}</div><div class="stat-sub">All projects</div></div>
+    <div class="stat-card"><div class="stat-label">In progress</div><div class="stat-val" style="color:var(--accent)">${inp}</div><div class="stat-sub">Active now</div></div>
+    <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-val" style="color:var(--green)">${done}</div><div class="stat-sub">${t?Math.round(done/t*100):0}% of total</div></div>
+    <div class="stat-card"><div class="stat-label">Avg progress</div><div class="stat-val">${avg}%</div><div class="stat-sub">Across all</div></div>
+    <div class="stat-card"><div class="stat-label">Blocked</div><div class="stat-val" style="color:var(--red)">${blk}</div><div class="stat-sub">Needs attention</div></div>`;
+}
+
+function renderBadges(){
+  document.getElementById('b-all').textContent=rows.length;
+  document.getElementById('b-prog').textContent=rows.filter(r=>r.status==='in-progress').length;
+  document.getElementById('b-rev').textContent=rows.filter(r=>r.status==='review').length;
+  document.getElementById('b-done').textContent=rows.filter(r=>r.status==='completed').length;
+  document.getElementById('b-block').textContent=rows.filter(r=>r.status==='blocked').length;
+}
+
+// ── TABLE VIEW ─────────────────────────────────────────────────────────
+function renderTable(){
+  const vis=columns.filter(c=>c.visible), data=filtered();
+  document.getElementById('row-count').textContent=`${data.length} of ${rows.length} project${rows.length!==1?'s':''}`;
+  document.getElementById('thead').innerHTML=`<tr><th style="width:40px">#</th>${vis.map(c=>`<th style="width:${colWidths[c.id]||'auto'}px"><div class="th-inner" onclick="toggleSort('${c.id}')">
+    <span>${c.label}</span>
+    <div class="th-sort ${sortCol===c.id?sortDir:''}">
+      <svg viewBox="0 0 10 6"><polygon points="5,0 0,6 10,6"/></svg>
+      <svg viewBox="0 0 10 6"><polygon points="0,0 10,0 5,6"/></svg>
+    </div>
+    <button class="col-del-btn" onclick="event.stopPropagation();removeCol('${c.id}')">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div><div class="col-resize" onmousedown="startResize(event,'${c.id}')"></div></th>`).join('')}<th style="width:100px"></th></tr>`;
+
+  if(!data.length){
+    document.getElementById('tbody').innerHTML=`<tr><td colspan="${vis.length+2}">
+      <div class="empty-state">
+        <div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg></div>
+        <div class="empty-title">No projects found</div><div class="empty-sub">Click "Add project" to get started</div>
+        <button class="btn btn-primary" onclick="addRow()"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add project</button>
+      </div></td></tr>`;
+    return;
+  }
+  document.getElementById('tbody').innerHTML=data.map((row,i)=>`
+    <tr data-id="${row._id}">
+      <td>${i+1}</td>
+      ${vis.map(c=>renderCell(row,c)).join('')}
+      <td style="text-align:center">
+        <a href="/project/${row._id}" style="display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:6px;font-size:11px;font-weight:500;text-decoration:none;border:1px solid ${row._has_notes?'var(--accent-b)':'var(--border)'};color:${row._has_notes?'var(--accent)':'var(--text3)'};background:${row._has_notes?'var(--accent-l)':'transparent'}">
+          <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          ${row._has_notes?'Notes':'Details'}
+        </a>
+        <div class="row-actions" style="margin-top:3px">
+          <button class="row-action-btn danger" onclick="deleteRow(${row._id})">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function renderCell(row,col){
+  const v=row[col.id]!==undefined?row[col.id]:'';
+  if(col.type==='status'){const m=STATUS_META[v]||STATUS_META['not-started'];return `<td><span class="status-pill ${m.cls}" onclick="openStatusDd(event,${row._id})"><span class="dot"></span>${m.label}</span></td>`;}
+  if(col.type==='percent'){const p=Math.min(100,Math.max(0,parseInt(v)||0));const fc=p>=75?'high':p>=40?'med':'';return `<td><div class="pct-cell"><div class="pct-bar-wrap"><div class="pct-bar-fill ${fc}" style="width:${p}%"></div></div><input class="pct-input" type="number" min="0" max="100" value="${p}" onchange="updateCell(${row._id},'${col.id}',Math.min(100,Math.max(0,parseInt(this.value)||0)))"><span style="font-size:11px;color:var(--text3)">%</span></div></td>`;}
+  if(col.type==='date') return `<td><input class="cell-input" type="date" value="${v}" onchange="updateCell(${row._id},'${col.id}',this.value)"></td>`;
+  if(col.type==='number') return `<td><input class="cell-input" type="number" value="${v}" placeholder="0" style="max-width:90px" onchange="updateCell(${row._id},'${col.id}',this.value)"></td>`;
+  if(col.type==='url') return `<td>${v?`<a href="${v}" target="_blank" style="color:var(--accent);font-size:12px">🔗</a> `:''}<input class="cell-input" type="url" value="${v}" placeholder="https://…" style="font-size:12px" onchange="updateCell(${row._id},'${col.id}',this.value)"></td>`;
+  return `<td><input class="cell-input" type="text" value="${(v+'').replace(/"/g,'&quot;')}" placeholder="—" onchange="updateCell(${row._id},'${col.id}',this.value)"></td>`;
+}
+
+// ── KANBAN VIEW ────────────────────────────────────────────────────────
+function renderKanban(){
+  const data=filtered();
+  const board=document.getElementById('kanban-board');
+  board.innerHTML=KANBAN_COLS.map(col=>{
+    const cards=data.filter(r=>r.status===col.id);
+    return `
+    <div class="kanban-col">
+      <div class="kanban-col-header">
+        <div class="kanban-col-dot" style="background:${col.dot}"></div>
+        <div class="kanban-col-title">${col.label}</div>
+        <div class="kanban-col-count">${cards.length}</div>
+      </div>
+      <div class="kanban-cards" id="kcol-${col.id}"
+        ondragover="kanbanDragOver(event,'${col.id}')"
+        ondragleave="kanbanDragLeave(event)"
+        ondrop="kanbanDrop(event,'${col.id}')">
+        ${cards.map(r=>buildKanbanCard(r)).join('')}
+        <button class="kanban-add-btn" onclick="addRowWithStatus('${col.id}')">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add project
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildKanbanCard(row){
+  const pct=Math.min(100,Math.max(0,parseInt(row.pct)||0));
+  const fc=pct>=75?'high':pct>=40?'med':'';
+  const tools=row.tools?`<span class="kc-tag"><svg viewBox="0 0 24 24" style="width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>${row.tools.length>22?row.tools.slice(0,22)+'…':row.tools}</span>`:'';
+  const agent=row.agent?`<span class="kc-tag">${row.agent}</span>`:'';
+  const target=row.target?`<span class="kc-tag"><svg viewBox="0 0 24 24" style="width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${row.target}</span>`:'';
+  return `<div class="kanban-card" draggable="true" data-id="${row._id}"
+    ondragstart="kanbanDragStart(event,${row._id})"
+    ondragend="kanbanDragEnd(event)">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px">
+      <div class="kc-project">${row.project||'Untitled'}</div>
+      <div class="kc-actions">
+        <a href="/project/${row._id}" class="kc-notes-link" title="Technical notes">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Notes
+        </a>
+        <button class="kc-btn danger" onclick="deleteRow(${row._id})" title="Delete">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+        </button>
+      </div>
+    </div>
+    ${row.purpose?`<div class="kc-purpose">${row.purpose}</div>`:''}
+    <div class="kc-footer">${tools}${agent}${target}</div>
+    ${pct>0?`<div class="kc-pct">
+      <div class="kc-pct-bar"><div class="kc-pct-fill ${fc}" style="width:${pct}%"></div></div>
+      <div class="kc-pct-label">${pct}%</div>
+    </div>`:''}
+  </div>`;
+}
+
+// ── Kanban drag & drop ─────────────────────────────────────────────────
+function kanbanDragStart(e,id){ dragRowId=id; e.target.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; }
+function kanbanDragEnd(e){ e.target.classList.remove('dragging'); document.querySelectorAll('.kanban-cards').forEach(c=>c.classList.remove('drag-over')); dragRowId=null; }
+function kanbanDragOver(e,colId){ e.preventDefault(); document.getElementById('kcol-'+colId).classList.add('drag-over'); }
+function kanbanDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
+async function kanbanDrop(e,colId){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if(dragRowId===null) return;
+  const row=rows.find(r=>r._id===dragRowId);
+  if(!row||row.status===colId) return;
+  row.status=colId;
+  await api(`/api/projects/${row._id}`,'PUT',sanitize(row));
+  render();
+  toast(`Moved to ${STATUS_META[colId].label}`);
+}
+
+// ── Add row with preset status (from Kanban column) ────────────────────
+async function addRowWithStatus(status){
+  const newRow={};
+  columns.forEach(c=>{ newRow[c.id]=c.type==='percent'?0:c.type==='status'?status:''; });
+  newRow.date=new Date().toISOString().split('T')[0];
+  newRow.status=status;
+  const result=await api('/api/projects','POST',newRow);
+  newRow._id=result._id;
+  rows.push(newRow);
+  render();
+  toast('Project added');
+}
+
+// ── CRUD ───────────────────────────────────────────────────────────────
+async function addRow(){
+  const newRow={};
+  columns.forEach(c=>{ newRow[c.id]=c.type==='percent'?0:c.type==='status'?'not-started':''; });
+  newRow.date=new Date().toISOString().split('T')[0];
+  const result=await api('/api/projects','POST',newRow);
+  newRow._id=result._id; rows.push(newRow); render();
+  if(currentLayoutView==='table'){
+    setTimeout(()=>{ const last=document.querySelector('#tbody tr:last-child'); if(last){const inp=last.querySelector('input[type=text]');if(inp){inp.focus();inp.select();}} },60);
+  }
+  toast('Project added');
+}
+
+async function updateCell(id,colId,val){
+  const row=rows.find(r=>r._id===id); if(!row) return;
+  row[colId]=val; renderStats(); renderBadges();
+  if(colId==='pct'){const tr=document.querySelector(`tr[data-id="${id}"]`);if(tr){const fill=tr.querySelector('.pct-bar-fill');if(fill)fill.style.width=val+'%';}}
+  await api(`/api/projects/${id}`,'PUT',sanitize(row));
+}
+
+async function deleteRow(id){
+  if(!confirm('Delete this project?')) return;
+  rows=rows.filter(r=>r._id!==id); render();
+  await api(`/api/projects/${id}`,'DELETE');
+  toast('Project deleted');
+}
+
+function sanitize(row){ const r={...row}; delete r._id;delete r._created;delete r._updated;delete r._has_notes; return r; }
+
+// ── Sorting ────────────────────────────────────────────────────────────
+function toggleSort(id){ sortCol===id?(sortDir=sortDir==='asc'?'desc':'asc'):(sortCol=id,sortDir='asc'); renderTable(); }
+
+// ── View filter ────────────────────────────────────────────────────────
+function setView(v,el){
+  activeView=v;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('view-title').textContent=el.querySelector('span:first-of-type').textContent.trim();
+  renderCurrent();
+}
+
+// ── Column manager ─────────────────────────────────────────────────────
+function openColModal(){ refreshColList(); document.getElementById('col-modal').classList.add('open'); }
+function closeColModal(){ document.getElementById('col-modal').classList.remove('open'); renderCurrent(); }
+document.getElementById('col-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('col-modal')) closeColModal(); });
+
+function refreshColList(){
+  document.getElementById('col-list').innerHTML=columns.map(c=>`
+    <div class="col-item">
+      <div class="col-item-label">${c.label}</div>
+      <span class="col-type-tag">${c.type}</span>
+      <label class="toggle-switch"><input type="checkbox" ${c.visible?'checked':''} onchange="toggleColVisible('${c.id}',this.checked)">
+        <div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+    </div>`).join('');
+}
+
+async function toggleColVisible(id,visible){ const col=columns.find(c=>c.id===id); if(col) col.visible=visible; await api('/api/columns','PUT',columns); }
+
+async function addColumn(){
+  const name=document.getElementById('new-col-name').value.trim();
+  const type=document.getElementById('new-col-type').value;
+  if(!name){ document.getElementById('new-col-name').focus(); return; }
+  const id='col_'+Date.now();
+  columns.push({id,label:name,type,visible:true});
+  rows.forEach(r=>{ r[id]=type==='percent'?0:type==='status'?'not-started':''; });
+  document.getElementById('new-col-name').value='';
+  refreshColList();
+  await Promise.all([api('/api/columns','PUT',columns),...rows.map(r=>api(`/api/projects/${r._id}`,'PUT',sanitize(r)))]);
+  toast(`Column "${name}" added`);
+}
+
+async function removeCol(id){
+  const col=columns.find(c=>c.id===id); if(!col) return;
+  col.visible=false; await api('/api/columns','PUT',columns);
+  renderCurrent(); refreshColList(); toast(`Column "${col.label}" hidden`);
+}
+
+// ── Status dropdown ────────────────────────────────────────────────────
+function openStatusDd(e,id){
+  e.stopPropagation(); statusTarget=id;
+  const dd=document.getElementById('status-dd');
+  const rect=e.target.closest('.status-pill').getBoundingClientRect();
+  Object.assign(dd.style,{position:'fixed',top:(rect.bottom+6)+'px',left:rect.left+'px'});
+  document.body.appendChild(dd); dd.classList.add('open');
+}
+function setStatus(val){
+  if(statusTarget!==null) updateCell(statusTarget,'status',val).then(()=>render());
+  document.getElementById('status-dd').classList.remove('open'); statusTarget=null;
+}
+document.addEventListener('click',()=>{ document.getElementById('status-dd').classList.remove('open'); statusTarget=null; });
+
+// ── AI Summary ─────────────────────────────────────────────────────────
+function openSummaryModal(){ document.getElementById('summary-modal').classList.add('open'); loadHistory(); }
+function closeSummaryModal(){ document.getElementById('summary-modal').classList.remove('open'); }
+document.getElementById('summary-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('summary-modal')) closeSummaryModal(); });
+function selectPeriod(el){ document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); selectedPeriod=el.dataset.period; }
+function toggleKeyVis(btn){ const inp=document.getElementById('api-key-input'); inp.type=inp.type==='password'?'text':'password'; btn.textContent=inp.type==='password'?'Show':'Hide'; }
+const PERIOD_LABELS={'month':'This month','quarter':'This quarter','all':'All time'};
+
+async function generateSummary(){
+  const key=document.getElementById('api-key-input').value.trim();
+  if(!key){ toast('Please enter your Anthropic API key','err'); return; }
+  document.getElementById('summary-config').style.display='none';
+  document.getElementById('summary-loading').style.display='block';
+  document.getElementById('summary-result').style.display='none';
+  try{
+    const data=await api('/api/summary','POST',{api_key:key,period:selectedPeriod,label:PERIOD_LABELS[selectedPeriod]});
+    if(data.error) throw new Error(data.error);
+    lastSummaryText=data.summary;
+    document.getElementById('summary-text').innerHTML=markdownToHtml(data.summary);
+    document.getElementById('summary-meta').textContent=`${data.project_count} projects · ${PERIOD_LABELS[selectedPeriod]} · ${new Date().toLocaleString()}`;
+    document.getElementById('summary-loading').style.display='none';
+    document.getElementById('summary-result').style.display='block';
+    document.getElementById('summary-config').style.display='block';
+    loadHistory();
+  }catch(e){
+    document.getElementById('summary-loading').style.display='none';
+    document.getElementById('summary-config').style.display='block';
+    toast('Error: '+e.message,'err');
+  }
+}
+
+async function loadHistory(){
+  const list=await api('/api/summaries');
+  const el=document.getElementById('history-list');
+  if(!list.length){ el.innerHTML='<div style="font-size:13px;color:var(--text3)">No summaries yet.</div>'; return; }
+  el.innerHTML=list.map(s=>`<div class="history-item" onclick="loadSummary(${s.id})">
+    <span>${s.period_label}</span><span style="font-size:11px;color:var(--text3)">${new Date(s.created_at).toLocaleDateString()}</span>
+  </div>`).join('');
+}
+async function loadSummary(id){
+  const s=await api(`/api/summaries/${id}`);
+  lastSummaryText=s.content;
+  document.getElementById('summary-text').innerHTML=markdownToHtml(s.content);
+  document.getElementById('summary-meta').textContent=`${s.period_label} · ${new Date(s.created_at).toLocaleString()}`;
+  document.getElementById('summary-result').style.display='block';
+}
+function copySummary(){ navigator.clipboard.writeText(lastSummaryText).then(()=>toast('Copied to clipboard')); }
+function markdownToHtml(md){
+  return md.replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^### (.+)$/gm,'<h3 style="font-size:14px;font-weight:600;margin:14px 0 6px">$1</h3>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/^- (.+)$/gm,'<li>$1</li>').replace(/(<li>.*<\/li>)/gs,'<ul>$1</ul>').replace(/\n\n/g,'</p><p>').trim();
+}
+
+// ── Export ─────────────────────────────────────────────────────────────
+function exportCSV(){
+  const vis=columns.filter(c=>c.visible);
+  const esc=v=>`"${String(v||'').replace(/"/g,'""')}"`;
+  const hdr=['#',...vis.map(c=>c.label)].join(',');
+  const body=rows.map((r,i)=>[i+1,...vis.map(c=>esc(c.type==='status'?(STATUS_META[r[c.id]]||{label:''}).label:r[c.id]))].join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([hdr+'\n'+body],{type:'text/csv'}));
+  a.download=`projects-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click(); toast('CSV exported');
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────
+function toast(msg,type=''){
+  const w=document.getElementById('toast-wrap');
+  const t=document.createElement('div');
+  t.className='toast'+(type==='err'?' error':'');
+  t.innerHTML=`<svg viewBox="0 0 24 24">${type==='err'?'<circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>':'<polyline points="20 6 9 17 4 12"/>'}</svg>${msg}`;
+  w.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300); },2500);
+}
+
+// ── Column resize ─────────────────────────────────────────────────────
+let colWidths = JSON.parse(localStorage.getItem('pt_col_widths') || '{}');
+let resizeState = null;
+
+function startResize(e, colId) {
+  e.preventDefault();
+  e.stopPropagation();
+  const th = e.target.closest('th');
+  const startX = e.clientX;
+  const startW = th.offsetWidth;
+
+  // Show resize line
+  const line = document.getElementById('resize-line');
+  line.style.display = 'block';
+  line.style.left = e.clientX + 'px';
+  e.target.classList.add('resizing');
+
+  function onMove(e) {
+    const diff = e.clientX - startX;
+    const newW = Math.max(60, startW + diff);
+    line.style.left = e.clientX + 'px';
+    th.style.width = newW + 'px';
+    colWidths[colId] = newW;
+  }
+
+  function onUp() {
+    line.style.display = 'none';
+    e.target.classList.remove('resizing');
+    localStorage.setItem('pt_col_widths', JSON.stringify(colWidths));
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+boot();
+</script>
+</body>
+</html>

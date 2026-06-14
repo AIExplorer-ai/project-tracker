@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Details</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8f9fb;--surface:#fff;--surface2:#f2f4f7;--border:#e4e7ec;--border2:#d0d5dd;--text:#101828;--text2:#475467;--text3:#98a2b3;--accent:#2563eb;--accent-l:#eff6ff;--accent-b:#bfdbfe;--green:#16a34a;--green-bg:#f0fdf4;--green-b:#bbf7d0;--amber:#d97706;--amber-bg:#fffbeb;--red:#dc2626;--red-bg:#fef2f2;--red-b:#fecaca;--purple:#7c3aed;--purple-bg:#f5f3ff;--code-bg:#1e1e2e;--code-text:#cdd6f4;--font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;--r:8px;--r-lg:12px;--r-xl:16px;--sh:0 1px 3px rgba(0,0,0,.08);--sh-md:0 4px 16px rgba(0,0,0,.10);--sh-lg:0 8px 32px rgba(0,0,0,.13)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* ── Layout ── */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:260px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10;overflow-y:auto}
+.main{margin-left:260px;flex:1;display:flex;flex-direction:column}
+
+/* ── Sidebar ── */
+.sidebar-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.back-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);text-decoration:none;transition:all .12s}
+.back-btn:hover{background:var(--surface2);color:var(--text)}
+.back-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+.project-meta{padding:16px}
+.meta-name{font-size:15px;font-weight:600;margin-bottom:12px;color:var(--text)}
+.meta-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:12px}
+.meta-label{color:var(--text3);font-weight:500;min-width:70px;flex-shrink:0;padding-top:1px}
+.meta-val{color:var(--text2);flex:1;word-break:break-word}
+.status-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid transparent}
+.status-pill .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.sp-not-started{background:#f9fafb;color:#6b7280;border-color:#e5e7eb}
+.sp-in-progress{background:var(--accent-l);color:var(--accent);border-color:var(--accent-b)}
+.sp-review{background:var(--amber-bg);color:var(--amber);border-color:#fde68a}
+.sp-completed{background:var(--green-bg);color:var(--green);border-color:var(--green-b)}
+.sp-blocked{background:var(--red-bg);color:var(--red);border-color:var(--red-b)}
+.pct-bar-wrap{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:5px}
+.pct-bar-fill{height:100%;border-radius:3px;background:var(--accent)}
+.sidebar-toc{padding:0 16px 16px}
+.toc-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.toc-item{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:12px;color:var(--text2);transition:all .12s;text-decoration:none}
+.toc-item:hover{background:var(--surface2);color:var(--text)}
+.toc-item.active{background:var(--accent-l);color:var(--accent)}
+.toc-item svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+
+/* ── Topbar ── */
+.topbar{position:sticky;top:0;z-index:9;background:rgba(248,249,251,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:0 28px;height:54px;display:flex;align-items:center;gap:12px}
+.topbar-title{font-size:14px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.save-status{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:5px}
+.save-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--text);transition:all .12s;white-space:nowrap}
+.btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+.btn:hover{background:var(--surface2)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:#1d4ed8}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-ghost:hover{background:var(--surface2);border-color:var(--border)}
+.btn-danger{color:var(--red);border-color:var(--red-b);background:var(--red-bg)}
+
+/* ── Content ── */
+.content{padding:28px;max-width:860px;width:100%}
+
+/* ── Add section bar ── */
+.add-section-bar{display:flex;align-items:center;gap:8px;padding:14px 16px;background:var(--surface);border:1.5px dashed var(--border2);border-radius:var(--r-lg);margin-bottom:20px;flex-wrap:wrap}
+.add-section-bar span{font-size:12px;color:var(--text3);font-weight:500;margin-right:4px}
+.section-type-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-family:var(--font);transition:all .12s}
+.section-type-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2}
+.section-type-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+
+/* ── Section cards ── */
+.section-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:16px;overflow:hidden;box-shadow:var(--sh);transition:box-shadow .15s}
+.section-card:hover{box-shadow:var(--sh-md)}
+.section-card.dragging{opacity:.5;box-shadow:var(--sh-lg)}
+.section-card.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-b)}
+
+.section-header{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.drag-handle{cursor:grab;color:var(--text3);display:flex;align-items:center;padding:2px}
+.drag-handle:active{cursor:grabbing}
+.drag-handle svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+.section-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.section-icon svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
+.section-title-input{flex:1;border:none;background:transparent;font-family:var(--font);font-size:13px;font-weight:600;color:var(--text);outline:none}
+.section-title-input::placeholder{color:var(--text3);font-weight:400}
+.section-actions{display:flex;gap:4px;margin-left:auto}
+.icon-btn{width:26px;height:26px;border-radius:6px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3)}
+.icon-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
+.icon-btn:hover{background:var(--border);color:var(--text)}
+.icon-btn.danger:hover{background:var(--red-bg);color:var(--red)}
+
+.section-body{padding:16px}
+
+/* ── Text section ── */
+.text-editor{width:100%;min-height:100px;border:none;background:transparent;font-family:var(--font);font-size:14px;color:var(--text2);line-height:1.7;outline:none;resize:none}
+.text-editor::placeholder{color:var(--text3)}
+
+/* ── Steps section ── */
+.steps-list{list-style:none}
+.step-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.step-item:last-child{border-bottom:none}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-num.done{background:var(--green)}
+.step-check{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;margin-top:4px;appearance:none;background:transparent}
+.step-check:checked{background:var(--green);border-color:var(--green);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l3 3 5-5' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center}
+.step-input{flex:1;border:none;background:transparent;font-family:var(--font);font-size:13px;color:var(--text);outline:none;line-height:1.5}
+.step-input.completed{text-decoration:line-through;color:var(--text3)}
+.step-input::placeholder{color:var(--text3)}
+.step-del{background:none;border:none;cursor:pointer;color:var(--text3);padding:2px;border-radius:4px;opacity:0;display:flex}
+.step-del svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
+.step-item:hover .step-del{opacity:1}
+.step-del:hover{color:var(--red)}
+.add-step-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;border:1px dashed var(--border2);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;font-family:var(--font);margin-top:8px;transition:all .12s}
+.add-step-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.add-step-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ── Code section ── */
+.code-wrap{background:var(--code-bg);border-radius:var(--r);overflow:hidden}
+.code-toolbar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
+.lang-select{background:rgba(255,255,255,.1);border:none;color:#cdd6f4;font-family:var(--mono);font-size:11px;border-radius:4px;padding:3px 8px;cursor:pointer;outline:none}
+.lang-select option{background:#1e1e2e;color:#cdd6f4}
+.copy-code-btn{margin-left:auto;background:rgba(255,255,255,.1);border:none;color:#cdd6f4;font-size:11px;font-family:var(--font);padding:3px 10px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:4px;font-weight:500}
+.copy-code-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2}
+.copy-code-btn:hover{background:rgba(255,255,255,.18)}
+.code-editor{width:100%;min-height:120px;background:transparent;border:none;color:var(--code-text);font-family:var(--mono);font-size:13px;line-height:1.6;padding:14px;outline:none;resize:none;tab-size:2}
+.code-editor::placeholder{color:rgba(205,214,244,.3)}
+
+/* ── Links section ── */
+.links-list{display:flex;flex-direction:column;gap:8px}
+.link-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);transition:border-color .12s}
+.link-item:hover{border-color:var(--accent-b)}
+.link-icon{width:28px;height:28px;border-radius:6px;background:var(--accent-l);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.link-icon svg{width:14px;height:14px;stroke:var(--accent);fill:none;stroke-width:2}
+.link-fields{flex:1;display:flex;flex-direction:column;gap:3px}
+.link-title-inp{border:none;background:transparent;font-family:var(--font);font-size:13px;font-weight:500;color:var(--text);outline:none;width:100%}
+.link-url-inp{border:none;background:transparent;font-family:var(--mono);font-size:11px;color:var(--text3);outline:none;width:100%}
+.link-url-inp::placeholder,.link-title-inp::placeholder{color:var(--text3)}
+.link-open-btn{width:26px;height:26px;border-radius:6px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);flex-shrink:0}
+.link-open-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
+.link-open-btn:hover{background:var(--accent-l);color:var(--accent)}
+.add-link-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;border:1px dashed var(--border2);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;font-family:var(--font);margin-top:6px;transition:all .12s}
+.add-link-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.add-link-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ── Decision section ── */
+.decision-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.decision-col{background:var(--surface2);border-radius:var(--r);padding:12px}
+.decision-col-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.decision-col-title svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2}
+.dec-pros .decision-col-title{color:var(--green)}
+.dec-cons .decision-col-title{color:var(--red)}
+.decision-items{list-style:none}
+.decision-item{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.decision-item-inp{flex:1;border:none;background:transparent;font-family:var(--font);font-size:12px;color:var(--text2);outline:none}
+.decision-item-inp::placeholder{color:var(--text3)}
+.decision-del{background:none;border:none;cursor:pointer;color:var(--text3);padding:1px;opacity:0;display:flex}
+.decision-item:hover .decision-del{opacity:1}
+.decision-del svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2}
+.add-dec-btn{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;padding:3px 0;font-family:var(--font);margin-top:4px}
+.add-dec-btn:hover{color:var(--text)}
+.add-dec-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ── Callout section ── */
+.callout{border-radius:var(--r);padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.callout.info{background:var(--accent-l);border:1px solid var(--accent-b)}
+.callout.warning{background:var(--amber-bg);border:1px solid #fde68a}
+.callout.success{background:var(--green-bg);border:1px solid var(--green-b)}
+.callout.error{background:var(--red-bg);border:1px solid var(--red-b)}
+.callout-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.callout-body{flex:1}
+.callout-type-sel{border:none;background:transparent;font-size:11px;font-weight:600;color:var(--text3);cursor:pointer;font-family:var(--font);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;display:block;outline:none}
+.callout-text{border:none;background:transparent;font-family:var(--font);font-size:13px;color:var(--text2);width:100%;min-height:60px;outline:none;resize:none;line-height:1.6}
+.callout-text::placeholder{color:var(--text3)}
+
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-title{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.empty-sub{font-size:13px;margin-bottom:20px}
+
+/* ── Toast ── */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--text);color:#fff;padding:10px 14px;border-radius:var(--r-lg);font-size:13px;font-weight:500;box-shadow:var(--sh-md);display:flex;align-items:center;gap:8px;animation:slideUp .22s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Section type colors */
+.icon-steps{background:#eff6ff;color:#2563eb}
+.icon-code{background:#1e1e2e;color:#cdd6f4}
+.icon-notes{background:#f0fdf4;color:#16a34a}
+.icon-links{background:#faf5ff;color:#7c3aed}
+.icon-decision{background:#fffbeb;color:#d97706}
+.icon-callout{background:#fef2f2;color:#dc2626}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <a href="/" class="back-btn">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to tracker
+    </a>
+  </div>
+  <div class="project-meta" id="project-meta">
+    <div style="color:var(--text3);font-size:12px">Loading…</div>
+  </div>
+  <div class="sidebar-toc" id="toc">
+    <div class="toc-label">Sections</div>
+    <div id="toc-list"></div>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Project Details</div>
+    <div class="save-status"><span class="save-dot"></span><span id="save-label">All changes saved</span></div>
+    <button class="btn btn-primary btn-sm" onclick="addSection('steps')">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add section
+    </button>
+  </div>
+
+  <div class="content">
+    <!-- Add section bar -->
+    <div class="add-section-bar">
+      <span>Add:</span>
+      <button class="section-type-btn" onclick="addSection('steps')">
+        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Steps
+      </button>
+      <button class="section-type-btn" onclick="addSection('notes')">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Notes
+      </button>
+      <button class="section-type-btn" onclick="addSection('code')">
+        <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Code
+      </button>
+      <button class="section-type-btn" onclick="addSection('links')">
+        <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+        Links
+      </button>
+      <button class="section-type-btn" onclick="addSection('decision')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Decision
+      </button>
+      <button class="section-type-btn" onclick="addSection('callout')">
+        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Callout
+      </button>
+    </div>
+
+    <!-- Sections container -->
+    <div id="sections-container">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">No sections yet</div>
+        <div class="empty-sub">Start documenting your technical journey using the buttons above</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────
+const pid = parseInt(location.pathname.split('/').pop());
+let project = null;
+let sections = [];
+let saveTimer = null;
+
+const SECTION_ICONS = {
+  steps:    `<svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>`,
+  notes:    `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+  code:     `<svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+  links:    `<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>`,
+  decision: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  callout:  `<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+};
+
+const SECTION_COLORS = {
+  steps:'icon-steps', notes:'icon-notes', code:'icon-code',
+  links:'icon-links', decision:'icon-decision', callout:'icon-callout'
+};
+
+const STATUS_META = {
+  'not-started':{label:'Not started',cls:'sp-not-started'},
+  'in-progress': {label:'In progress', cls:'sp-in-progress'},
+  'review':      {label:'In review',   cls:'sp-review'},
+  'completed':   {label:'Completed',   cls:'sp-completed'},
+  'blocked':     {label:'Blocked',     cls:'sp-blocked'},
+};
+
+// ── Boot ───────────────────────────────────────────────────────────────
+async function boot(){
+  const [proj, notes] = await Promise.all([
+    fetch(`/api/projects/${pid}`).then(r=>r.json()),
+    fetch(`/api/notes/${pid}`).then(r=>r.json())
+  ]);
+  project = proj;
+  sections = notes.sections || [];
+  renderMeta();
+  renderSections();
+  renderTOC();
+}
+
+// ── Meta sidebar ───────────────────────────────────────────────────────
+function renderMeta(){
+  const p = project;
+  document.title = (p.project || 'Project') + ' — Details';
+  document.getElementById('topbar-title').textContent = p.project || 'Project Details';
+  const sm = STATUS_META[p.status] || STATUS_META['not-started'];
+  const pct = Math.min(100, Math.max(0, parseInt(p.pct)||0));
+  document.getElementById('project-meta').innerHTML = `
+    <div class="meta-name">${p.project || 'Untitled project'}</div>
+    <div class="meta-row"><span class="meta-label">Purpose</span><span class="meta-val">${p.purpose||'—'}</span></div>
+    <div class="meta-row"><span class="meta-label">Agent</span><span class="meta-val">${p.agent||'—'}</span></div>
+    <div class="meta-row"><span class="meta-label">Tools</span><span class="meta-val">${p.tools||'—'}</span></div>
+    <div class="meta-row"><span class="meta-label">Status</span><span class="meta-val"><span class="status-pill ${sm.cls}"><span class="dot"></span>${sm.label}</span></span></div>
+    <div class="meta-row"><span class="meta-label">Progress</span><span class="meta-val" style="flex:1">
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="pct-bar-wrap"><div class="pct-bar-fill" style="width:${pct}%"></div></div>
+        <span style="font-size:11px;color:var(--text3)">${pct}%</span>
+      </div>
+    </span></div>
+    <div class="meta-row"><span class="meta-label">Target</span><span class="meta-val">${p.target||'—'}</span></div>
+    ${p.learning ? `<div class="meta-row"><span class="meta-label">Learning</span><span class="meta-val">${p.learning}</span></div>` : ''}
+    ${p.comments ? `<div class="meta-row"><span class="meta-label">Notes</span><span class="meta-val">${p.comments}</span></div>` : ''}
+  `;
+}
+
+// ── TOC ────────────────────────────────────────────────────────────────
+function renderTOC(){
+  const list = document.getElementById('toc-list');
+  if(!sections.length){ list.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:4px 8px">No sections yet</div>'; return; }
+  list.innerHTML = sections.map(s=>`
+    <a class="toc-item" href="#sec-${s.id}" onclick="highlightSection('${s.id}')">
+      <div style="width:12px;height:12px;flex-shrink:0">${SECTION_ICONS[s.type]||''}</div>
+      ${s.title || s.type}
+    </a>`).join('');
+}
+
+function highlightSection(id){
+  document.querySelectorAll('.section-card').forEach(c=>c.style.outline='');
+  const el = document.getElementById('sec-'+id);
+  if(el){ el.style.outline='2px solid var(--accent-b)'; setTimeout(()=>el.style.outline='',1500); }
+}
+
+// ── Render all sections ────────────────────────────────────────────────
+function renderSections(){
+  const container = document.getElementById('sections-container');
+  const empty = document.getElementById('empty-state');
+  if(!sections.length){ empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  // Remove existing cards (keep empty state div)
+  container.querySelectorAll('.section-card').forEach(c=>c.remove());
+
+  sections.forEach(s => container.appendChild(buildCard(s)));
+  initDragDrop();
+}
+
+function buildCard(s){
+  const card = document.createElement('div');
+  card.className = 'section-card';
+  card.id = 'sec-'+s.id;
+  card.dataset.id = s.id;
+
+  card.innerHTML = `
+    <div class="section-header">
+      <div class="drag-handle" title="Drag to reorder">
+        <svg viewBox="0 0 24 24"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg>
+      </div>
+      <div class="section-icon ${SECTION_COLORS[s.type]||''}">${SECTION_ICONS[s.type]||''}</div>
+      <input class="section-title-input" value="${esc(s.title||'')}" placeholder="${defaultTitle(s.type)}"
+        oninput="updateSectionTitle('${s.id}',this.value)">
+      <div class="section-actions">
+        <button class="icon-btn danger" title="Delete section" onclick="deleteSection('${s.id}')">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="section-body" id="body-${s.id}"></div>`;
+
+  renderSectionBody(s, card.querySelector(`#body-${s.id}`));
+  return card;
+}
+
+function renderSectionBody(s, el){
+  switch(s.type){
+    case 'notes':    el.innerHTML = buildNotes(s); break;
+    case 'steps':    el.innerHTML = buildSteps(s); break;
+    case 'code':     el.innerHTML = buildCode(s);  break;
+    case 'links':    el.innerHTML = buildLinks(s); break;
+    case 'decision': el.innerHTML = buildDecision(s); break;
+    case 'callout':  el.innerHTML = buildCallout(s); break;
+  }
+}
+
+function defaultTitle(type){
+  return {steps:'Technical steps',notes:'Notes',code:'Code snippet',links:'References & links',decision:'Decision log',callout:'Key insight'}[type]||'Section';
+}
+
+// ── Section builders ───────────────────────────────────────────────────
+
+function buildNotes(s){
+  return `<textarea class="text-editor" placeholder="Write your technical notes here… architecture decisions, observations, context…"
+    oninput="updateSectionData('${s.id}','text',this.value);autoResize(this)"
+    onload="autoResize(this)">${esc(s.data?.text||'')}</textarea>`;
+}
+
+function buildSteps(s){
+  const steps = s.data?.steps || [];
+  const items = steps.map((st,i)=>`
+    <li class="step-item" data-idx="${i}">
+      <span class="step-num ${st.done?'done':''}">${i+1}</span>
+      <input type="checkbox" class="step-check" ${st.done?'checked':''} onchange="toggleStep('${s.id}',${i},this.checked)">
+      <input class="step-input ${st.done?'completed':''}" value="${esc(st.text||'')}" placeholder="Describe this step…"
+        oninput="updateStep('${s.id}',${i},'text',this.value)">
+      <button class="step-del" onclick="deleteStep('${s.id}',${i})">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </li>`).join('');
+  return `<ul class="steps-list">${items}</ul>
+    <button class="add-step-btn" onclick="addStep('${s.id}')">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add step
+    </button>`;
+}
+
+function buildCode(s){
+  const langs = ['python','javascript','typescript','bash','sql','json','yaml','html','css','go','rust','java','text'];
+  const lang = s.data?.lang || 'python';
+  const code = s.data?.code || '';
+  return `<div class="code-wrap">
+    <div class="code-toolbar">
+      <select class="lang-select" onchange="updateSectionData('${s.id}','lang',this.value)">
+        ${langs.map(l=>`<option value="${l}" ${l===lang?'selected':''}>${l}</option>`).join('')}
+      </select>
+      <button class="copy-code-btn" onclick="copyCode('${s.id}')">
+        <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy
+      </button>
+    </div>
+    <textarea class="code-editor" placeholder="# Paste or type your code here…"
+      oninput="updateSectionData('${s.id}','code',this.value);autoResize(this)">${esc(code)}</textarea>
+  </div>`;
+}
+
+function buildLinks(s){
+  const links = s.data?.links || [];
+  const items = links.map((l,i)=>`
+    <div class="link-item">
+      <div class="link-icon"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
+      <div class="link-fields">
+        <input class="link-title-inp" value="${esc(l.title||'')}" placeholder="Link title"
+          oninput="updateLink('${s.id}',${i},'title',this.value)">
+        <input class="link-url-inp" value="${esc(l.url||'')}" placeholder="https://…"
+          oninput="updateLink('${s.id}',${i},'url',this.value)">
+      </div>
+      <button class="link-open-btn" onclick="openLink('${s.id}',${i})" title="Open link">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </button>
+      <button class="icon-btn danger" onclick="deleteLink('${s.id}',${i})">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`).join('');
+  return `<div class="links-list">${items}</div>
+    <button class="add-link-btn" onclick="addLink('${s.id}')">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add link
+    </button>`;
+}
+
+function buildDecision(s){
+  const pros = s.data?.pros || [];
+  const cons = s.data?.cons || [];
+  const proItems = pros.map((p,i)=>`
+    <li class="decision-item">
+      <input class="decision-item-inp" value="${esc(p)}" placeholder="Pro…" oninput="updateDecision('${s.id}','pros',${i},this.value)">
+      <button class="decision-del" onclick="deleteDecItem('${s.id}','pros',${i})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </li>`).join('');
+  const conItems = cons.map((c,i)=>`
+    <li class="decision-item">
+      <input class="decision-item-inp" value="${esc(c)}" placeholder="Con…" oninput="updateDecision('${s.id}','cons',${i},this.value)">
+      <button class="decision-del" onclick="deleteDecItem('${s.id}','cons',${i})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </li>`).join('');
+  return `<div class="decision-grid">
+    <div class="decision-col dec-pros">
+      <div class="decision-col-title"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Pros / Why it works</div>
+      <ul class="decision-items">${proItems}</ul>
+      <button class="add-dec-btn" onclick="addDecItem('${s.id}','pros')"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add pro</button>
+    </div>
+    <div class="decision-col dec-cons">
+      <div class="decision-col-title"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Cons / Trade-offs</div>
+      <ul class="decision-items">${conItems}</ul>
+      <button class="add-dec-btn" onclick="addDecItem('${s.id}','cons')"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add con</button>
+    </div>
+  </div>`;
+}
+
+function buildCallout(s){
+  const type = s.data?.callout_type || 'info';
+  const text = s.data?.text || '';
+  const icons = {info:'💡',warning:'⚠️',success:'✅',error:'❌'};
+  return `<div class="callout ${type}">
+    <div class="callout-icon">${icons[type]||'💡'}</div>
+    <div class="callout-body">
+      <select class="callout-type-sel" onchange="updateCalloutType('${s.id}',this.value)">
+        <option value="info" ${type==='info'?'selected':''}>💡 Insight</option>
+        <option value="warning" ${type==='warning'?'selected':''}>⚠️ Warning</option>
+        <option value="success" ${type==='success'?'selected':''}>✅ Success</option>
+        <option value="error" ${type==='error'?'selected':''}>❌ Gotcha</option>
+      </select>
+      <textarea class="callout-text" placeholder="Write your key insight, warning or note…"
+        oninput="updateSectionData('${s.id}','text',this.value);autoResize(this)">${esc(text)}</textarea>
+    </div>
+  </div>`;
+}
+
+// ── Section mutations ──────────────────────────────────────────────────
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+function addSection(type){
+  const defaults = {
+    steps:    {steps:[]},
+    notes:    {text:''},
+    code:     {lang:'python',code:''},
+    links:    {links:[]},
+    decision: {pros:[],cons:[]},
+    callout:  {callout_type:'info',text:''},
+  };
+  const s = {id:uid(), type, title:'', data: defaults[type]||{}};
+  sections.push(s);
+  document.getElementById('empty-state').style.display='none';
+  const container = document.getElementById('sections-container');
+  container.appendChild(buildCard(s));
+  initDragDrop();
+  renderTOC();
+  scheduleSave();
+  // scroll to new section
+  document.getElementById('sec-'+s.id).scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function deleteSection(id){
+  if(!confirm('Delete this section?')) return;
+  sections = sections.filter(s=>s.id!==id);
+  document.getElementById('sec-'+id)?.remove();
+  if(!sections.length) document.getElementById('empty-state').style.display='block';
+  renderTOC();
+  scheduleSave();
+}
+
+function updateSectionTitle(id, val){
+  const s = sections.find(s=>s.id===id); if(s){ s.title=val; renderTOC(); scheduleSave(); }
+}
+
+function updateSectionData(id, key, val){
+  const s = sections.find(s=>s.id===id); if(s){ s.data = s.data||{}; s.data[key]=val; scheduleSave(); }
+}
+
+// Steps
+function addStep(id){
+  const s = sections.find(s=>s.id===id); if(!s) return;
+  s.data.steps = s.data.steps||[];
+  s.data.steps.push({text:'',done:false});
+  reRenderBody(s); scheduleSave();
+  setTimeout(()=>{
+    const inputs = document.querySelectorAll(`#body-${id} .step-input`);
+    if(inputs.length) inputs[inputs.length-1].focus();
+  },50);
+}
+function deleteStep(id, idx){
+  const s = sections.find(s=>s.id===id); if(!s) return;
+  s.data.steps.splice(idx,1); reRenderBody(s); scheduleSave();
+}
+function updateStep(id, idx, key, val){
+  const s = sections.find(s=>s.id===id); if(!s) return;
+  s.data.steps[idx][key]=val; scheduleSave();
+}
+function toggleStep(id, idx, done){
+  const s = sections.find(s=>s.id===id); if(!s) return;
+  s.data.steps[idx].done=done; reRenderBody(s); scheduleSave();
+}
+
+// Links
+function addLink(id){
+  const s = sections.find(s=>s.id===id); if(!s) return;
+  s.data.links = s.data.links||[];
+  s.data.links.push({title:'',url:''});
+  reRenderBody(s); scheduleSave();
+}
+function deleteLink(id, idx){
+  const s = sections.find(s=>s.id===id); if(!s) return;
+  s.data.links.splice(idx,1); reRenderBody(s); scheduleSave();
+}
+function updateLink(id, idx, key, val){
+  const s = sections.find(s=>s.id===id); if(!s) return;
+  s.data.links[idx][key]=val; scheduleSave();
+}
+function openLink(id, idx){
+  const s = sections.find(s=>s.id===id); if(!s) return;
+  const url = s.data.links[idx]?.url; if(url) window.open(url,'_blank');
+}
+
+// Decision
+function addDecItem(id, side){
+  const s = sections.find(s=>s.id===id); if(!s) return;
+  s.data[side] = s.data[side]||[];
+  s.data[side].push(''); reRenderBody(s); scheduleSave();
+}
+function deleteDecItem(id, side, idx){
+  const s = sections.find(s=>s.id===id); if(!s) return;
+  s.data[side].splice(idx,1); reRenderBody(s); scheduleSave();
+}
+function updateDecision(id, side, idx, val){
+  const s = sections.find(s=>s.id===id); if(!s) return;
+  s.data[side][idx]=val; scheduleSave();
+}
+
+// Callout
+function updateCalloutType(id, type){
+  const s = sections.find(s=>s.id===id); if(!s) return;
+  s.data.callout_type=type; reRenderBody(s); scheduleSave();
+}
+
+// Code copy
+function copyCode(id){
+  const s = sections.find(s=>s.id===id); if(!s) return;
+  navigator.clipboard.writeText(s.data?.code||'').then(()=>toast('Code copied'));
+}
+
+function reRenderBody(s){
+  const el = document.getElementById('body-'+s.id); if(!el) return;
+  renderSectionBody(s, el);
+}
+
+// ── Save ───────────────────────────────────────────────────────────────
+function scheduleSave(){
+  document.getElementById('save-label').textContent = 'Saving…';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(save, 800);
+}
+
+async function save(){
+  try{
+    await fetch(`/api/notes/${pid}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({sections})});
+    document.getElementById('save-label').textContent = 'All changes saved';
+  }catch(e){
+    document.getElementById('save-label').textContent = 'Save failed';
+  }
+}
+
+// ── Drag & drop reorder ────────────────────────────────────────────────
+let dragSrc = null;
+function initDragDrop(){
+  document.querySelectorAll('.section-card').forEach(card=>{
+    card.setAttribute('draggable','true');
+    card.addEventListener('dragstart', e=>{ dragSrc=card; card.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+    card.addEventListener('dragend',   ()=>{ card.classList.remove('dragging'); document.querySelectorAll('.section-card').forEach(c=>c.classList.remove('drag-over')); });
+    card.addEventListener('dragover',  e=>{ e.preventDefault(); if(card!==dragSrc) card.classList.add('drag-over'); });
+    card.addEventListener('dragleave', ()=>card.classList.remove('drag-over'));
+    card.addEventListener('drop', e=>{
+      e.preventDefault(); card.classList.remove('drag-over');
+      if(!dragSrc||dragSrc===card) return;
+      const container = document.getElementById('sections-container');
+      const cards = [...container.querySelectorAll('.section-card')];
+      const fromIdx = cards.indexOf(dragSrc), toIdx = cards.indexOf(card);
+      if(fromIdx<toIdx) card.after(dragSrc); else card.before(dragSrc);
+      // reorder sections array
+      const [moved] = sections.splice(fromIdx,1);
+      sections.splice(toIdx,0,moved);
+      renderTOC(); scheduleSave();
+    });
+  });
+}
+
+// ── Utils ──────────────────────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function autoResize(el){ el.style.height='auto'; el.style.height=el.scrollHeight+'px'; }
+function toast(msg){
+  const w=document.getElementById('toast-wrap');
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  w.appendChild(t); setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},2000);
+}
+
+// auto-resize textareas after render
+document.addEventListener('input', e=>{ if(e.target.matches('textarea')) autoResize(e.target); });
+document.addEventListener('DOMContentLoaded', ()=>{ document.querySelectorAll('textarea').forEach(autoResize); });
+
+boot();
+</script>
+</body>
+</html>
