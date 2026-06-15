@@ -236,10 +236,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
         <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         Notes
       </button>
-      <button class="section-type-btn" onclick="addSection('code')">
-        <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-        Code
-      </button>
       <button class="section-type-btn" onclick="addSection('links')">
         <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
         Links
@@ -278,23 +274,22 @@ let saveTimer = null;
 const SECTION_ICONS = {
   steps:    `<svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>`,
   notes:    `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
-  code:     `<svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
   links:    `<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>`,
   decision: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
   callout:  `<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
 };
 
 const SECTION_COLORS = {
-  steps:'icon-steps', notes:'icon-notes', code:'icon-code',
+  steps:'icon-steps', notes:'icon-notes',
   links:'icon-links', decision:'icon-decision', callout:'icon-callout'
 };
 
 const STATUS_META = {
   'not-started':{label:'Not started',cls:'sp-not-started'},
   'in-progress': {label:'In progress', cls:'sp-in-progress'},
-  'review':      {label:'In review',   cls:'sp-review'},
+  'review':      {label:'Testing',     cls:'sp-review'},
   'completed':   {label:'Completed',   cls:'sp-completed'},
-  'blocked':     {label:'Blocked',     cls:'sp-blocked'},
+  'blocked':     {label:'On hold',     cls:'sp-blocked'},
 };
 
 // ── Boot ───────────────────────────────────────────────────────────────
@@ -331,7 +326,7 @@ function renderMeta(){
     </span></div>
     <div class="meta-row"><span class="meta-label">Target</span><span class="meta-val">${p.target||'—'}</span></div>
     ${p.learning ? `<div class="meta-row"><span class="meta-label">Learning</span><span class="meta-val">${p.learning}</span></div>` : ''}
-    ${p.comments ? `<div class="meta-row"><span class="meta-label">Notes</span><span class="meta-val">${p.comments}</span></div>` : ''}
+    ${p.comments ? `<div class="meta-row"><span class="meta-label">Project details</span><span class="meta-val">${p.comments}</span></div>` : ''}
   `;
 }
 
@@ -396,7 +391,6 @@ function renderSectionBody(s, el){
   switch(s.type){
     case 'notes':    el.innerHTML = buildNotes(s); break;
     case 'steps':    el.innerHTML = buildSteps(s); break;
-    case 'code':     el.innerHTML = buildCode(s);  break;
     case 'links':    el.innerHTML = buildLinks(s); break;
     case 'decision': el.innerHTML = buildDecision(s); break;
     case 'callout':  el.innerHTML = buildCallout(s); break;
@@ -404,7 +398,7 @@ function renderSectionBody(s, el){
 }
 
 function defaultTitle(type){
-  return {steps:'Technical steps',notes:'Notes',code:'Code snippet',links:'References & links',decision:'Decision log',callout:'Key insight'}[type]||'Section';
+  return {steps:'Technical steps',notes:'Notes',links:'References & links',decision:'Decision log',callout:'Key insight'}[type]||'Section';
 }
 
 // ── Section builders ───────────────────────────────────────────────────
@@ -531,7 +525,6 @@ function addSection(type){
   const defaults = {
     steps:    {steps:[]},
     notes:    {text:''},
-    code:     {lang:'python',code:''},
     links:    {links:[]},
     decision: {pros:[],cons:[]},
     callout:  {callout_type:'info',text:''},

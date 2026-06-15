@@ -11,7 +11,7 @@ A personal project tracking system with SQLite database and AI-powered summaries
 pip install -r requirements.txt
 
 # 3. Run the app
-python app.py
+python project_tracker.py
 ```
 
 Then open http://localhost:5000 in your browser.
@@ -34,7 +34,7 @@ Past summaries are saved in the database and viewable anytime.
 
 ```
 project-tracker/
-├── app.py            ← Flask server + API
+├── project_tracker.py ← Flask server + API
 ├── requirements.txt  ← Python dependencies
 ├── projects.db       ← Your data (auto-created)
 ├── README.md

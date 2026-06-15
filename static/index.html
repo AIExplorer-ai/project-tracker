@@ -277,7 +277,7 @@ tbody tr:hover .row-actions{opacity:1}
     </button>
     <button class="nav-item" onclick="setView('review',this)">
       <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-      <span>In review</span><span class="badge" id="b-rev">0</span>
+      <span>Testing</span><span class="badge" id="b-rev">0</span>
     </button>
     <button class="nav-item" onclick="setView('completed',this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
@@ -285,7 +285,7 @@ tbody tr:hover .row-actions{opacity:1}
     </button>
     <button class="nav-item" onclick="setView('blocked',this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M4.93 4.93l14.14 14.14"/></svg>
-      <span>Blocked</span><span class="badge" id="b-block">0</span>
+      <span>On hold</span><span class="badge" id="b-block">0</span>
     </button>
     <div class="nav-label" style="margin-top:16px">AI</div>
     <button class="nav-item" onclick="openSummaryModal()">
@@ -447,9 +447,9 @@ tbody tr:hover .row-actions{opacity:1}
 <div class="status-dropdown" id="status-dd">
   <div class="status-option" onclick="setStatus('not-started')"><span class="dot" style="background:#9ca3af"></span>Not started</div>
   <div class="status-option" onclick="setStatus('in-progress')"><span class="dot" style="background:#2563eb"></span>In progress</div>
-  <div class="status-option" onclick="setStatus('review')"><span class="dot" style="background:#d97706"></span>In review</div>
+  <div class="status-option" onclick="setStatus('review')"><span class="dot" style="background:#d97706"></span>Testing</div>
   <div class="status-option" onclick="setStatus('completed')"><span class="dot" style="background:#16a34a"></span>Completed</div>
-  <div class="status-option" onclick="setStatus('blocked')"><span class="dot" style="background:#dc2626"></span>Blocked</div>
+  <div class="status-option" onclick="setStatus('blocked')"><span class="dot" style="background:#dc2626"></span>On hold</div>
 </div>
 
 <div class="toast-wrap" id="toast-wrap"></div>
@@ -464,17 +464,17 @@ let dragCard=null, dragRowId=null;
 const STATUS_META={
   'not-started':{label:'Not started',cls:'sp-not-started',dot:'#9ca3af',col:'not-started'},
   'in-progress': {label:'In progress', cls:'sp-in-progress', dot:'#2563eb',col:'in-progress'},
-  'review':      {label:'In review',   cls:'sp-review',      dot:'#d97706',col:'review'},
+  'review':      {label:'Testing',     cls:'sp-review',      dot:'#d97706',col:'review'},
   'completed':   {label:'Completed',   cls:'sp-completed',   dot:'#16a34a',col:'completed'},
-  'blocked':     {label:'Blocked',     cls:'sp-blocked',     dot:'#dc2626',col:'blocked'},
+  'blocked':     {label:'On hold',     cls:'sp-blocked',     dot:'#dc2626',col:'blocked'},
 };
 
 const KANBAN_COLS=[
   {id:'not-started', label:'Not started', dot:'#9ca3af'},
   {id:'in-progress',  label:'In progress',  dot:'#2563eb'},
-  {id:'review',       label:'In review',    dot:'#d97706'},
+  {id:'review',       label:'Testing',      dot:'#d97706'},
   {id:'completed',    label:'Completed',    dot:'#16a34a'},
-  {id:'blocked',      label:'Blocked',      dot:'#dc2626'},
+  {id:'blocked',      label:'On hold',      dot:'#dc2626'},
 ];
 
 // ── Dark mode ──────────────────────────────────────────────────────────
@@ -553,7 +553,7 @@ function renderStats(){
     <div class="stat-card"><div class="stat-label">In progress</div><div class="stat-val" style="color:var(--accent)">${inp}</div><div class="stat-sub">Active now</div></div>
     <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-val" style="color:var(--green)">${done}</div><div class="stat-sub">${t?Math.round(done/t*100):0}% of total</div></div>
     <div class="stat-card"><div class="stat-label">Avg progress</div><div class="stat-val">${avg}%</div><div class="stat-sub">Across all</div></div>
-    <div class="stat-card"><div class="stat-label">Blocked</div><div class="stat-val" style="color:var(--red)">${blk}</div><div class="stat-sub">Needs attention</div></div>`;
+    <div class="stat-card"><div class="stat-label">On hold</div><div class="stat-val" style="color:var(--red)">${blk}</div><div class="stat-sub">Needs attention</div></div>`;
 }
 
 function renderBadges(){
@@ -595,7 +595,7 @@ function renderTable(){
       <td style="text-align:center">
         <a href="/project/${row._id}" style="display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:6px;font-size:11px;font-weight:500;text-decoration:none;border:1px solid ${row._has_notes?'var(--accent-b)':'var(--border)'};color:${row._has_notes?'var(--accent)':'var(--text3)'};background:${row._has_notes?'var(--accent-l)':'transparent'}">
           <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          ${row._has_notes?'Notes':'Details'}
+          ${row._has_notes?'Project details':'Project details'}
         </a>
         <div class="row-actions" style="margin-top:3px">
           <button class="row-action-btn danger" onclick="deleteRow(${row._id})">
@@ -655,9 +655,9 @@ function buildKanbanCard(row){
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px">
       <div class="kc-project">${row.project||'Untitled'}</div>
       <div class="kc-actions">
-        <a href="/project/${row._id}" class="kc-notes-link" title="Technical notes">
+        <a href="/project/${row._id}" class="kc-notes-link" title="Project details">
           <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Notes
+          Project details
         </a>
         <button class="kc-btn danger" onclick="deleteRow(${row._id})" title="Delete">
           <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>

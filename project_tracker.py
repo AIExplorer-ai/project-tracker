@@ -74,7 +74,7 @@ def init_db():
     if cur.fetchone()[0] == 0:
         samples = [
             {"date":"2024-06-01","project":"AI Chatbot","purpose":"Customer support automation","agent":"LLM Agent","tools":"Claude API, LangChain","learning":"Prompt engineering basics","target":"2024-07-15","status":"in-progress","pct":60,"comments":"Going well"},
-            {"date":"2024-06-05","project":"Data Pipeline","purpose":"ETL automation","agent":"Code agent","tools":"Python, Pandas, Airflow","learning":"DAG design patterns","target":"2024-06-30","status":"review","pct":90,"comments":"Needs QA sign-off"},
+            {"date":"2024-06-05","project":"Data Pipeline","purpose":"ETL automation","agent":"Code agent","tools":"Python, Pandas, Airflow","learning":"DAG design patterns","target":"2024-06-30","status":"testing","pct":90,"comments":"Needs QA sign-off"},
             {"date":"2024-06-10","project":"RAG System","purpose":"Document Q&A","agent":"RAG Agent","tools":"Embeddings, Pinecone","learning":"Vector search tuning","target":"2024-08-01","status":"not-started","pct":0,"comments":"Waiting for data"},
         ]
         for s in samples:
